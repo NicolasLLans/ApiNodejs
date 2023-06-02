@@ -1,7 +1,9 @@
 const express = require('express')
 const app = express()
 
-const notes = [
+app.use(express.json())
+
+let notes = [
   {
     "id": 1,
     "content": "Tengo una tarea por hacer",
@@ -48,6 +50,23 @@ app.delete('/api/notes/:id', (req, res) => {
   const id = Number(req.params.id)
   notes = notes.filter(note => note.id !== id)
   res.status(204).end()
+})
+
+app.post('/api/notes', (req, res) => {
+  const note = req.body
+  const ids = notes.map(note => note.id)
+  const maxId = Math.max(...ids)
+
+  const newNote = {
+    id:maxId + 1,
+    content: note.content,
+    important: typeof note.important  !== 'undefined' ? note.important : false,
+    date: new Date().toISOString()
+  }
+
+  notes = notes.concat(newNote)
+
+  res.json(note)
 })
 
 const PORT = 3001
