@@ -1,28 +1,15 @@
+require('./mongo')
+
 const express = require('express')
+const cors = require('cors')
 const app = express()
 
+const Note = require('./models/Note')
+
+app.use(cors())
 app.use(express.json())
 
-let notes = [
-  {
-    "id": 1,
-    "content": "Tengo una tarea por hacer",
-    "date": "2019-05-30",
-    "importante": true
-  },
-  {
-    "id": 2,
-    "content": "Tengo una tarea por hacer",
-    "date": "2019-05-30",
-    "importante": true
-  },
-  {
-    "id": 3,
-    "content": "Tengo una tarea por hacer",
-    "date": "2019-05-30",
-    "importante": true
-  }
-]
+let notes = []
 // const App = http.createServer((req,res) => {
 //       res.writeHead(200, { 'Content-Type': 'test/plain' })
 //       res.end("hello word")
@@ -32,7 +19,9 @@ app.get('/', (req, res) => {
 })
 
 app.get('/api/notes', (req, res) => {
-  res.json(notes)
+  Note.find({}).then(notes => {
+    res.json(notes)
+  })
 })
 
 app.get('/api/notes/:id', (req, res) => {
@@ -54,22 +43,28 @@ app.delete('/api/notes/:id', (req, res) => {
 
 app.post('/api/notes', (req, res) => {
   const note = req.body
+
+  if(!note || !note.content){
+    return res.status(400).json({
+      error: 'note.content is missing'
+    })
+  }
   const ids = notes.map(note => note.id)
   const maxId = Math.max(...ids)
 
   const newNote = {
     id:maxId + 1,
     content: note.content,
-    important: typeof note.important  !== 'undefined' ? note.important : false,
-    date: new Date().toISOString()
+    date: new Date().toISOString(),
+    importante: typeof note.importante  !== 'undefined' ? note.importante : false
   }
 
   notes = notes.concat(newNote)
 
-  res.json(note)
+  res.status(201).json(note)
 })
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running en port ${PORT}`)
 })
