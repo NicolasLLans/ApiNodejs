@@ -5,15 +5,13 @@ const cors = require('cors')
 const app = express()
 
 const Note = require('./models/Note')
+const notFound = require('./middleware/notFound.js')
+const handleError = require('./middleware/handleError.js')
 
 app.use(cors())
 app.use(express.json())
 
-let notes = []
-// const App = http.createServer((req,res) => {
-//       res.writeHead(200, { 'Content-Type': 'test/plain' })
-//       res.end("hello word")
-// })
+
 app.get('/', (req, res) => {
   res.send('<h1>Hola mundo</h1>')
 })
@@ -37,10 +35,29 @@ app.get('/api/notes/:id', (req, res, next) => {
   })
 })
 
-app.delete('/api/notes/:id', (req, res) => {
-  const id = Number(req.params.id)
-  notes = notes.filter(note => note.id !== id)
-  res.status(204).end()
+app.put('/api/notes/:id', (req, res, next) => {
+  const {id} = req.params
+  const note = req.body
+
+  const newNoteInfo = {
+    content: note.content,
+    importante: note.importante
+  }
+
+  Note.findByIdAndUpdate(id, newNoteInfo, { new : true})
+  .then(result => {
+    res.status(201).end()
+  })
+  .catch(error => next(error))
+})
+
+app.delete('/api/notes/:id', (req, res, next) => {
+  const {id} = req.params
+  Note.findByIdAndDelete(id)
+  .then(result => {
+    res.status(204).end()
+  })
+  .catch(error => next(error))
 })
 
 app.post('/api/notes', (req, res) => {
@@ -63,14 +80,8 @@ app.post('/api/notes', (req, res) => {
   })
 })
 
-app.use((error,req,res,next) => {
-  console.error(error)
-  if(error.name === 'CastError') {
-    res.status(400).send({error:'id used is malformed'})
-  }else{
-    res.status(500).end()
-  }
-})
+app.use(notFound)
+app.use(handleError)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

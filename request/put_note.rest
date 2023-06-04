@@ -1,0 +1,7 @@
+PUT http://localhost:3001/api/notes/647ba6f4ba217e88b802ab02
+Content-Type: 'application/json'
+
+{
+  "content": "nueva tarea",
+  "importante": true
+}
