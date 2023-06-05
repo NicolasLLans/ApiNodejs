@@ -7,6 +7,7 @@ const app = express()
 const Note = require('./models/Note')
 const notFound = require('./middleware/notFound.js')
 const handleError = require('./middleware/handleError.js')
+const userRouter = require('./controllers/users.js')
 
 app.use(cors())
 app.use(express.json())
@@ -79,6 +80,8 @@ app.post('/api/notes', (req, res) => {
     res.status(201).json(note)
   })
 })
+
+app.use('/api/users', userRouter )
 
 app.use(notFound)
 app.use(handleError)
