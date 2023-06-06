@@ -4,6 +4,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 
+const User = require('./models/User')
 const Note = require('./models/Note')
 const notFound = require('./middleware/notFound.js')
 const handleError = require('./middleware/handleError.js')
@@ -61,24 +62,42 @@ app.delete('/api/notes/:id', (req, res, next) => {
   .catch(error => next(error))
 })
 
-app.post('/api/notes', (req, res) => {
-  const note = req.body
+app.post('/api/notes', async (req, res) => 
+{
+  const {
+    content, 
+    importante = false,
+    userId
+  } = req.body
 
-  if (!note.content) {
+  const user = await User.findById(userId)
+  
+  if(!content) {
     return res.status(400).json({
       error: 'note.content is missing'
     })
   }
 
   const newNote = new Note({
-    content: note.content,
+    content,
     date: new Date(),
-    importante: note.importante || false
+    importante,
+    user: user.id
+
   })
 
-  newNote.save().then(saveNote => {
-    res.status(201).json(note)
-  })
+  // newNote.save().then(saveNote => {
+  //   res.status(201).json(note)
+  // })
+  try{
+    const savedNote = await newNote.save()
+
+    user.notes = user.notes.concat(savedNote.id)
+    await user.save()
+    res.json(savedNote)
+  }catch(error){
+    next(error)
+  }
 })
 
 app.use('/api/users', usersRouter )
