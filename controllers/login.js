@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt')
 const loginRouter = require('express').Router()
 const User = require('../models/User')
 
+if(process.env.NODE_ENV !== 'production') {
+      require('dotenv').config()
+}
+
 loginRouter.post('/', async (req, res) => {
       const { body } = req
       const { username, password } = body
@@ -19,12 +23,12 @@ loginRouter.post('/', async (req, res) => {
             })
       }
 
-      const token = jwt.sign(userForToken, process.env.SECRET)
-
       const userForToken = {
             id: user._id,
             username: user.username
       }
+
+      const token = jwt.sign(userForToken, process.env.SECRET)
 
       res.send({
             name: user.name,
