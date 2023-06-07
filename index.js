@@ -18,10 +18,12 @@ app.get('/', (req, res) => {
   res.send('<h1>Hola mundo</h1>')
 })
 
-app.get('/api/notes', (req, res) => {
-  Note.find({}).then(notes => {
-    res.json(notes)
-  })
+app.get('/api/notes', async (req, res) => {
+  const notes = await Note.find({}).populate('user', {
+    username:1,
+    name:1
+  }) 
+  res.json(notes)
 })
 
 app.get('/api/notes/:id', (req, res, next) => {
