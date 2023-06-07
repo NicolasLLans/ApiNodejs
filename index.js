@@ -9,7 +9,7 @@ const Note = require('./models/Note')
 const notFound = require('./middleware/notFound.js')
 const handleError = require('./middleware/handleError.js')
 const usersRouter = require('./controllers/users')
-
+const loginRouter = require('./controllers/login')
 app.use(cors())
 app.use(express.json())
 
@@ -103,6 +103,8 @@ app.post('/api/notes', async (req, res) =>
 })
 
 app.use('/api/users', usersRouter )
+app.use('/api/login', loginRouter )
+
 
 app.use(notFound)
 app.use(handleError)
