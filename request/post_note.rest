@@ -1,7 +1,8 @@
 POST http://localhost:3001/api/notes
-Content-Type: 'application/json'
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0N2ZjYmQ1MDhjZGQ4OTNhODU1MjRkOCIsInVzZXJuYW1lIjoiTmljb2xhc1VzZXIiLCJpYXQiOjE2ODYxNzc3NjV9.bAxx9sTGBUAPhelv4Z41y9MrsbJ_KlGEnV9dVZ9aw6M
 
 {
-  "content": "nueva tarea",
+  "content": "nueva Notaa!!",
   "importante": true
 }

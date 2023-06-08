@@ -2,6 +2,7 @@ require('./mongo')
 
 const express = require('express')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
 const app = express()
 
 const User = require('./models/User')
@@ -12,6 +13,10 @@ const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 app.use(cors())
 app.use(express.json())
+
+if(process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
 
 
 app.get('/', (req, res) => {
@@ -69,9 +74,24 @@ app.post('/api/notes', async (req, res) =>
   const {
     content, 
     importante = false,
-    userId
   } = req.body
 
+  const authoritazion = req.get('authorization')
+  let token = null
+  if( authoritazion && authoritazion.toLowerCase().startsWith('bearer')){
+    token = authoritazion.substring(7)
+  }
+
+  let decodedToken={}
+  try{
+    decodedToken = jwt.verify(token, process.env.SECRET)
+  }catch{}
+
+  if(!token || !decodedToken.id){
+    return res.status(401).json({error: 'token missing or inavlid' })
+  }
+
+  const {id: userId} = decodedToken
   const user = await User.findById(userId)
   
   if(!content) {
