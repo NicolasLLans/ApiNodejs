@@ -4,6 +4,8 @@ const ERROR_HANDLERS ={
   ValidationError: (res, {message}) => res.status(409).send({ error : message}),
 
   JsonWebTokenError: (res) => res.status(401).json({error: 'token inavlid' }),
+
+  TokenExpirerError: res => res.status(401).json({ error: 'token expired' }),
   
   defaultError: res => res.status(500).end
 

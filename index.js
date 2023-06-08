@@ -1,14 +1,15 @@
 require('./mongo')
 
 const express = require('express')
-const cors = require('cors')
-const jwt = require('jsonwebtoken')
 const app = express()
-
+const cors = require('cors')
 const User = require('./models/User')
 const Note = require('./models/Note')
+
 const notFound = require('./middleware/notFound.js')
 const handleError = require('./middleware/handleError.js')
+const userExtractor = require('./middleware/userExtractor')
+
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 app.use(cors())
@@ -44,7 +45,7 @@ app.get('/api/notes/:id', (req, res, next) => {
   })
 })
 
-app.put('/api/notes/:id', (req, res, next) => {
+app.put('/api/notes/:id', userExtractor, (req, res, next) => {
   const {id} = req.params
   const note = req.body
 
@@ -60,7 +61,7 @@ app.put('/api/notes/:id', (req, res, next) => {
   .catch(error => next(error))
 })
 
-app.delete('/api/notes/:id', (req, res, next) => {
+app.delete('/api/notes/:id', userExtractor, (req, res, next) => {
   const {id} = req.params
   Note.findByIdAndDelete(id)
   .then(result => {
@@ -69,29 +70,16 @@ app.delete('/api/notes/:id', (req, res, next) => {
   .catch(error => next(error))
 })
 
-app.post('/api/notes', async (req, res) => 
+app.post('/api/notes', userExtractor, async (req, res) => 
 {
   const {
     content, 
     importante = false,
   } = req.body
 
-  const authoritazion = req.get('authorization')
-  let token = null
-  if( authoritazion && authoritazion.toLowerCase().startsWith('bearer')){
-    token = authoritazion.substring(7)
-  }
+  //extraer el usuario de la req
+  const { userId } = req
 
-  let decodedToken={}
-  try{
-    decodedToken = jwt.verify(token, process.env.SECRET)
-  }catch{}
-
-  if(!token || !decodedToken.id){
-    return res.status(401).json({error: 'token missing or inavlid' })
-  }
-
-  const {id: userId} = decodedToken
   const user = await User.findById(userId)
   
   if(!content) {
